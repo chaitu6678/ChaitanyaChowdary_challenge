@@ -10,14 +10,14 @@ func isValidCreditCardNumber(cardNumber string) bool {
 	// Remove any hyphens
 	cardNumberWithoutHyphen := strings.ReplaceAll(cardNumber, "-", "")
 
-	// Check if the first digit is 4, 5, or 6
-	firstDigit, _ := strconv.Atoi(string(cardNumberWithoutHyphen[0]))
-	if firstDigit != 4 && firstDigit != 5 && firstDigit != 6 {
+	// Check if the length is exactly 16 digits
+	if len(cardNumberWithoutHyphen) != 16 {
 		return false
 	}
 
-	// Check if the length is exactly 16 digits
-	if len(cardNumberWithoutHyphen) != 16 {
+	// Check if the first digit is 4, 5, or 6
+	firstDigit, _ := strconv.Atoi(string(cardNumberWithoutHyphen[0]))
+	if firstDigit != 4 && firstDigit != 5 && firstDigit != 6 {
 		return false
 	}
 
@@ -29,18 +29,28 @@ func isValidCreditCardNumber(cardNumber string) bool {
 	}
 
 	// If the card number contains hyphens, check if digits are grouped in sets of 4
-	if strings.Contains(cardNumber, "-") && validGrouping(cardNumber) {
-		return true
+	if strings.Contains(cardNumber, "-") && !validGrouping(cardNumber) {
+		return false
 	}
 
-	return false
+	// Check for consecutive repeated digits (not exceeding 3)
+	repeated := 0
+	for i := 0; i < len(cardNumberWithoutHyphen)-1; i++ {
+		if cardNumberWithoutHyphen[i] == cardNumberWithoutHyphen[i+1] {
+			repeated++
+			if repeated >= 3 {
+				return false
+			}
+		} else {
+			repeated = 0
+		}
+	}
+
+	return true
 }
 
 func validGrouping(cardNumber string) bool {
 	digits := strings.Split(cardNumber, "-")
-	if len(digits) != 4 {
-		return false
-	}
 	for _, group := range digits {
 		if len(group) != 4 {
 			return false
